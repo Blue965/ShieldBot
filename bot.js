@@ -4,6 +4,11 @@
 // Install:  npm install discord.js @discordjs/rest express
 // ============================================================
 
+require('dotenv').config();
+
+console.log("TOKEN:", process.env.DISCORD_TOKEN);
+console.log("CLIENT_ID:", process.env.CLIENT_ID);
+
 const { Client, GatewayIntentBits, Partials, Events,
         PermissionFlagsBits, EmbedBuilder, Collection,
         REST, Routes } = require('discord.js');
