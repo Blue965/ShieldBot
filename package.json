@@ -1,0 +1,21 @@
+{
+  "name": "shieldbot-antiraid",
+  "version": "2.4.0",
+  "description": "Discord AntiRaid Bot with Dashboard",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dashboard": "node server.js",
+    "dev": "node -e \"require('./bot.js'); require('./server.js');\""
+  },
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "@discordjs/rest": "^2.3.0",
+    "express": "^4.18.3",
+    "express-session": "^1.18.0",
+    "axios": "^1.6.8"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

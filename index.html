@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShieldBot — Dashboard AntiRaid</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0:#07050f;--bg1:#0d0b1a;--bg2:#131024;--bg3:#1a162e;--bg4:#221e3a;
+  --border:rgba(139,92,246,0.12);--border2:rgba(139,92,246,0.25);--border3:rgba(139,92,246,0.45);
+  --v0:#3b1fa8;--v1:#5b21b6;--v2:#7c3aed;--v3:#8b5cf6;--v4:#a78bfa;--v5:#c4b5fd;
+  --b1:#1d4ed8;--b2:#2563eb;--b3:#3b82f6;--b4:#93c5fd;
+  --pink:#ec4899;--pink2:#f472b6;
+  --green:#10b981;--green2:#34d399;
+  --amber:#f59e0b;--red:#ef4444;--red2:#f87171;
+  --text0:#f0ebff;--text1:#b8aed4;--text2:#6b6080;--text3:#3d3557;
+  --font:'DM Sans',system-ui,sans-serif;--display:'Syne',system-ui,sans-serif;
+  --r:10px;--rl:16px;--rxl:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{background:var(--bg0);color:var(--text0);font-family:var(--font);overflow:hidden;}
+
+/* BG FX */
+.bg-mesh{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.bg-mesh::before{content:'';position:absolute;width:800px;height:800px;top:-200px;left:-200px;background:radial-gradient(ellipse,rgba(91,33,182,0.18) 0%,transparent 65%);border-radius:50%;}
+.bg-mesh::after{content:'';position:absolute;width:600px;height:600px;bottom:-100px;right:-100px;background:radial-gradient(ellipse,rgba(29,78,216,0.14) 0%,transparent 65%);border-radius:50%;}
+.bg-grid{position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(139,92,246,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,0.04) 1px,transparent 1px);background-size:40px 40px;}
+.bg-orb1{position:fixed;width:300px;height:300px;top:20%;left:10%;background:radial-gradient(circle,rgba(124,58,237,0.08),transparent 70%);pointer-events:none;z-index:0;animation:orbFloat 8s ease-in-out infinite;}
+.bg-orb2{position:fixed;width:200px;height:200px;bottom:30%;right:15%;background:radial-gradient(circle,rgba(37,99,235,0.07),transparent 70%);pointer-events:none;z-index:0;animation:orbFloat 10s ease-in-out infinite reverse;}
+
+@keyframes orbFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-30px) scale(1.05)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes borderGlow{0%,100%{box-shadow:0 0 0 0 rgba(139,92,246,0)}50%{box-shadow:0 0 20px 2px rgba(139,92,246,0.2)}}
+@keyframes scanline{0%{transform:translateY(-100%)}100%{transform:translateY(100vh)}}
+@keyframes countUp{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+
+/* ===== PAGES ===== */
+.page{position:fixed;inset:0;z-index:10;display:none;}
+.page.active{display:flex;}
+
+/* ===== LOGIN PAGE ===== */
+#page-login{align-items:center;justify-content:center;flex-direction:column;}
+.login-wrap{position:relative;z-index:2;width:100%;max-width:460px;padding:20px;}
+.login-logo{display:flex;align-items:center;gap:14px;justify-content:center;margin-bottom:10px;}
+.login-logo-icon{width:56px;height:56px;background:linear-gradient(135deg,var(--v2),var(--b2));border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 32px rgba(124,58,237,0.45);animation:borderGlow 3s ease infinite;}
+.login-logo-icon svg{width:28px;height:28px;color:#fff;}
+.login-title{font-family:var(--display);font-size:32px;font-weight:800;letter-spacing:-1px;}
+.login-title span{background:linear-gradient(135deg,var(--v4),var(--b4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.login-card{background:rgba(13,11,26,0.85);border:1px solid var(--border2);border-radius:var(--rxl);padding:36px 32px;margin-top:28px;backdrop-filter:blur(20px);box-shadow:0 32px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(139,92,246,0.1);animation:fadeUp 0.6s ease both;}
+.login-subtitle{text-align:center;color:var(--text1);font-size:14px;margin-bottom:28px;line-height:1.6;}
+.login-subtitle strong{color:var(--v4);}
+.discord-btn{width:100%;padding:14px 20px;background:linear-gradient(135deg,#5865f2,#4752c4);border:none;border-radius:var(--r);color:white;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:12px;transition:all 0.2s;box-shadow:0 8px 32px rgba(88,101,242,0.35);}
+.discord-btn:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(88,101,242,0.5);}
+.discord-btn svg{width:22px;height:22px;}
+.login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text3);font-size:12px;}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.login-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;}
+.lf-item{display:flex;align-items:center;gap:8px;padding:10px 12px;background:rgba(139,92,246,0.06);border:1px solid var(--border);border-radius:var(--r);font-size:12px;color:var(--text1);}
+.lf-dot{width:6px;height:6px;border-radius:50%;background:var(--v3);flex-shrink:0;box-shadow:0 0 6px var(--v3);}
+.login-footer{text-align:center;font-size:11px;color:var(--text3);margin-top:20px;}
+
+/* Loading screen */
+#page-loading{align-items:center;justify-content:center;flex-direction:column;gap:16px;}
+.load-spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--v3);border-radius:50%;animation:spin 0.8s linear infinite;}
+.load-text{font-size:14px;color:var(--text1);}
+
+/* ===== APP ===== */
+#page-app{flex-direction:row;}
+
+/* SIDEBAR */
+.sidebar{width:260px;min-width:260px;background:rgba(10,8,19,0.9);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;backdrop-filter:blur(20px);z-index:20;position:relative;}
+.sb-header{padding:18px 16px 12px;border-bottom:1px solid var(--border);}
+.sb-logo{display:flex;align-items:center;gap:10px;}
+.sb-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--v2),var(--b2));border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px rgba(124,58,237,0.35);}
+.sb-logo-icon svg{width:18px;height:18px;color:#fff;}
+.sb-logo-text{font-family:var(--display);font-size:18px;font-weight:800;letter-spacing:-0.5px;}
+.sb-logo-text span{background:linear-gradient(135deg,var(--v4),var(--b4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.sb-version{font-size:10px;color:var(--text3);margin-left:auto;font-weight:600;padding:2px 7px;background:rgba(139,92,246,0.1);border-radius:10px;border:1px solid var(--border);}
+
+/* Server selector */
+.sb-server-sel{margin:12px;padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s;position:relative;}
+.sb-server-sel:hover{border-color:var(--border2);}
+.srv-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--v1),var(--b1));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.srv-info{flex:1;min-width:0;}
+.srv-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.srv-id{font-size:11px;color:var(--text2);font-family:monospace;}
+.srv-chev{color:var(--text2);flex-shrink:0;transition:transform 0.2s;}
+.srv-chev.open{transform:rotate(180deg);}
+.srv-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:rgba(13,11,26,0.98);border:1px solid var(--border2);border-radius:var(--r);padding:6px;z-index:100;display:none;backdrop-filter:blur(12px);box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.srv-dropdown.open{display:block;animation:fadeUp 0.18s ease;}
+.srv-opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;cursor:pointer;transition:background 0.12s;font-size:13px;}
+.srv-opt:hover{background:rgba(139,92,246,0.1);}
+.srv-opt.active{background:rgba(139,92,246,0.12);color:var(--v4);}
+
+/* Nav */
+.sb-nav{padding:8px;flex:1;overflow-y:auto;}
+.sb-section{padding:8px 8px 4px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);cursor:pointer;transition:all 0.15s;font-size:13px;color:var(--text1);margin-bottom:2px;}
+.sb-item:hover{background:rgba(139,92,246,0.08);color:var(--text0);}
+.sb-item.active{background:rgba(139,92,246,0.15);color:var(--v4);border:1px solid rgba(139,92,246,0.2);}
+.sb-item .si{width:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb-item .si svg{width:16px;height:16px;}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;}
+.sb-badge.v{background:rgba(139,92,246,0.2);color:var(--v4);border:1px solid rgba(139,92,246,0.25);}
+.sb-badge.r{background:rgba(239,68,68,0.2);color:var(--red2);border:1px solid rgba(239,68,68,0.25);}
+.sb-badge.g{background:rgba(16,185,129,0.15);color:var(--green2);border:1px solid rgba(16,185,129,0.2);}
+
+/* User bar */
+.sb-user{border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:10px;}
+.sb-av{width:36px;height:36px;border-radius:50%;border:2px solid var(--border2);object-fit:cover;background:var(--bg3);}
+.sb-uinfo{flex:1;min-width:0;}
+.sb-uname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.sb-utag{font-size:11px;color:var(--text2);}
+.sb-logout{width:28px;height:28px;border-radius:7px;background:none;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all 0.15s;flex-shrink:0;}
+.sb-logout:hover{background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.3);color:var(--red2);}
+
+/* MAIN */
+.main-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.topbar{height:52px;background:rgba(10,8,19,0.7);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 22px;gap:10px;flex-shrink:0;backdrop-filter:blur(12px);}
+.tb-title{font-family:var(--display);font-size:16px;font-weight:700;}
+.tb-breadcrumb{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:6px;}
+.tb-breadcrumb span{color:var(--v4);}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.tb-chip{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:12px;cursor:pointer;transition:all 0.15s;}
+.tb-chip:hover{border-color:var(--border2);}
+.online-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;box-shadow:0 0 6px var(--green);}
+.offline-dot{width:7px;height:7px;border-radius:50%;background:var(--red);}
+.tb-notif{width:34px;height:34px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;position:relative;}
+.tb-notif:hover{border-color:var(--border2);}
+.notif-badge{position:absolute;top:-4px;right:-4px;width:16px;height:16px;border-radius:50%;background:var(--red);font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid var(--bg0);}
+
+/* VIEWS */
+.view-content{flex:1;overflow-y:auto;padding:24px;}
+.view{display:none;}
+.view.active{display:block;animation:fadeUp 0.3s ease;}
+
+/* ===== COMPONENTS ===== */
+
+/* Stat cards */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;position:relative;overflow:hidden;transition:all 0.2s;}
+.stat-card:hover{border-color:var(--border2);transform:translateY(-2px);}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:2px 2px 0 0;}
+.stat-card.purple::before{background:linear-gradient(90deg,var(--v2),var(--v4));}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--b2),var(--b4));}
+.stat-card.green::before{background:linear-gradient(90deg,var(--green),var(--green2));}
+.stat-card.red::before{background:linear-gradient(90deg,var(--red),var(--red2));}
+.sc-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;}
+.sc-icon svg{width:20px;height:20px;}
+.sc-icon.purple{background:rgba(124,58,237,0.15);color:var(--v4);}
+.sc-icon.blue{background:rgba(37,99,235,0.15);color:var(--b4);}
+.sc-icon.green{background:rgba(16,185,129,0.12);color:var(--green2);}
+.sc-icon.red{background:rgba(239,68,68,0.12);color:var(--red2);}
+.sc-val{font-family:var(--display);font-size:30px;font-weight:800;line-height:1;margin-bottom:4px;}
+.sc-label{font-size:12px;color:var(--text2);}
+.sc-change{font-size:11px;margin-top:6px;display:flex;align-items:center;gap:4px;}
+.sc-change.up{color:var(--green2);}
+.sc-change.down{color:var(--red2);}
+
+/* Section headers */
+.sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.sec-title{font-family:var(--display);font-size:16px;font-weight:700;}
+.sec-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:20px;}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+
+/* Toggle switch */
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;border-radius:12px;background:var(--bg4);border:1px solid var(--border);cursor:pointer;transition:all 0.25s;}
+.toggle input:checked + .toggle-track{background:var(--v2);border-color:var(--v2);}
+.toggle-thumb{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--text2);transition:transform 0.25s,background 0.25s;}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(20px);background:white;}
+
+/* Custom dropdown */
+.cdd{position:relative;}
+.cdd-btn{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text0);font-size:13px;font-family:var(--font);cursor:pointer;transition:all 0.15s;width:100%;}
+.cdd-btn:hover{border-color:var(--border2);}
+.cdd.open .cdd-btn{border-color:var(--border3);box-shadow:0 0 0 3px rgba(139,92,246,0.08);}
+.cdd-chev{color:var(--text2);transition:transform 0.2s;flex-shrink:0;}
+.cdd.open .cdd-chev{transform:rotate(180deg);}
+.cdd-list{position:absolute;top:calc(100% + 4px);left:0;right:0;background:rgba(13,11,26,0.98);border:1px solid var(--border2);border-radius:var(--r);padding:5px;z-index:200;display:none;backdrop-filter:blur(16px);box-shadow:0 16px 48px rgba(0,0,0,0.6);}
+.cdd.open .cdd-list{display:block;animation:fadeUp 0.15s ease;}
+.cdd-opt{padding:9px 11px;border-radius:7px;font-size:13px;color:var(--text1);cursor:pointer;transition:all 0.1s;display:flex;align-items:center;gap:8px;}
+.cdd-opt:hover{background:rgba(139,92,246,0.1);color:var(--text0);}
+.cdd-opt.selected{color:var(--v4);background:rgba(139,92,246,0.1);}
+.cdd-opt-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* Buttons */
+.btn{padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);border:none;transition:all 0.2s;display:inline-flex;align-items:center;gap:7px;}
+.btn-v{background:linear-gradient(135deg,var(--v1),var(--v2));color:white;box-shadow:0 4px 16px rgba(124,58,237,0.25);}
+.btn-v:hover{filter:brightness(1.1);transform:translateY(-1px);}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text0);}
+.btn-outline:hover{border-color:var(--border3);background:rgba(139,92,246,0.06);}
+.btn-danger{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:var(--red2);}
+.btn-danger:hover{background:rgba(239,68,68,0.2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-icon{width:34px;height:34px;padding:0;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border);color:var(--text1);display:inline-flex;align-items:center;justify-content:center;}
+.btn-icon:hover{border-color:var(--border2);color:var(--text0);}
+.btn-icon svg{width:15px;height:15px;}
+
+/* Input */
+.inp{width:100%;padding:9px 13px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--text0);font-size:13px;font-family:var(--font);outline:none;transition:all 0.15s;}
+.inp:focus{border-color:var(--border3);box-shadow:0 0 0 3px rgba(139,92,246,0.08);}
+.inp::placeholder{color:var(--text3);}
+.inp-label{font-size:12px;font-weight:600;color:var(--text1);margin-bottom:6px;display:block;}
+
+/* Tag input */
+.tag-wrap{display:flex;flex-wrap:wrap;gap:5px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);min-height:42px;cursor:text;}
+.tag-wrap:focus-within{border-color:var(--border3);box-shadow:0 0 0 3px rgba(139,92,246,0.08);}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.25);border-radius:6px;font-size:12px;color:var(--v5);}
+.tag-x{background:none;border:none;color:var(--v4);cursor:pointer;padding:0;font-size:12px;line-height:1;}
+.tag-x:hover{color:var(--red2);}
+.tag-input{background:transparent;border:none;outline:none;font-size:12px;color:var(--text0);font-family:var(--font);flex:1;min-width:80px;}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:13px;}
+.tbl th{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.tbl td{padding:11px 14px;border-bottom:1px solid rgba(139,92,246,0.06);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(139,92,246,0.03);}
+.tbl-av{width:28px;height:28px;border-radius:50%;background:var(--bg3);object-fit:cover;}
+
+/* Status badges */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;}
+.badge.green{background:rgba(16,185,129,0.12);color:var(--green2);border:1px solid rgba(16,185,129,0.2);}
+.badge.red{background:rgba(239,68,68,0.12);color:var(--red2);border:1px solid rgba(239,68,68,0.2);}
+.badge.amber{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.2);}
+.badge.purple{background:rgba(139,92,246,0.15);color:var(--v4);border:1px solid rgba(139,92,246,0.25);}
+.badge.blue{background:rgba(59,130,246,0.12);color:var(--b4);border:1px solid rgba(59,130,246,0.2);}
+
+/* Progress bar */
+.progress{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.progress-fill.v{background:linear-gradient(90deg,var(--v2),var(--v4));}
+.progress-fill.g{background:linear-gradient(90deg,var(--green),var(--green2));}
+.progress-fill.r{background:linear-gradient(90deg,var(--red),var(--red2));}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:rgba(13,11,26,0.97);border:1px solid var(--border2);border-radius:var(--r);padding:13px 18px;font-size:13px;animation:fadeUp 0.3s ease;box-shadow:0 16px 48px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);min-width:240px;}
+.toast-indicator{width:3px;height:36px;border-radius:2px;flex-shrink:0;}
+.toast.success .toast-indicator{background:var(--green2);}
+.toast.error .toast-indicator{background:var(--red2);}
+.toast.info .toast-indicator{background:var(--v4);}
+
+/* Alert boxes */
+.alert{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-radius:var(--r);font-size:13px;margin-bottom:14px;}
+.alert.red{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red2);}
+.alert.amber{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);color:var(--amber);}
+.alert.green{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--green2);}
+.alert.purple{background:rgba(139,92,246,0.08);border:1px solid var(--border2);color:var(--v4);}
+
+/* Log entries */
+.log-entry{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid rgba(139,92,246,0.06);}
+.log-entry:last-child{border-bottom:none;}
+.log-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.log-icon svg{width:15px;height:15px;}
+.log-icon.ban{background:rgba(239,68,68,0.12);color:var(--red2);}
+.log-icon.kick{background:rgba(245,158,11,0.12);color:var(--amber);}
+.log-icon.warn{background:rgba(139,92,246,0.12);color:var(--v4);}
+.log-icon.join{background:rgba(16,185,129,0.1);color:var(--green2);}
+.log-icon.shield{background:rgba(59,130,246,0.12);color:var(--b4);}
+.log-body{flex:1;}
+.log-text{font-size:13px;line-height:1.5;}
+.log-text strong{color:var(--text0);}
+.log-time{font-size:11px;color:var(--text3);margin-top:3px;}
+
+/* Chart placeholder */
+.chart-bar-wrap{display:flex;align-items:flex-end;gap:6px;height:80px;padding-top:8px;}
+.chart-bar{flex:1;border-radius:4px 4px 0 0;transition:all 0.5s ease;position:relative;cursor:pointer;}
+.chart-bar:hover{filter:brightness(1.2);}
+.chart-bar.v{background:linear-gradient(180deg,var(--v3),var(--v1));}
+.chart-bar.b{background:linear-gradient(180deg,var(--b3),var(--b1));}
+.chart-labels{display:flex;gap:6px;margin-top:6px;}
+.chart-labels span{flex:1;text-align:center;font-size:10px;color:var(--text3);}
+
+/* ===== SETTINGS ROW ===== */
+.set-row{display:flex;align-items:center;padding:15px 0;border-bottom:1px solid var(--border);}
+.set-row:last-child{border-bottom:none;}
+.set-info{flex:1;}
+.set-name{font-size:14px;font-weight:500;}
+.set-desc{font-size:12px;color:var(--text2);margin-top:2px;}
+.set-ctrl{min-width:180px;display:flex;justify-content:flex-end;}
+
+/* Severity selector */
+.severity-sel{display:flex;gap:6px;}
+.sev-opt{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid transparent;transition:all 0.15s;}
+.sev-opt.low{color:var(--green2);}
+.sev-opt.low.active{background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);}
+.sev-opt.med{color:var(--amber);}
+.sev-opt.med.active{background:rgba(245,158,11,0.12);border-color:rgba(245,158,11,0.3);}
+.sev-opt.high{color:var(--red2);}
+.sev-opt.high.active{background:rgba(239,68,68,0.12);border-color:rgba(239,68,68,0.3);}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+</style>
+</head>
+<body>
+
+<!-- BG FX -->
+<div class="bg-mesh"></div>
+<div class="bg-grid"></div>
+<div class="bg-orb1"></div>
+<div class="bg-orb2"></div>
+
+<!-- ========== LOGIN PAGE ========== -->
+<div class="page active" id="page-login">
+  <div class="login-wrap">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="login-title">Shield<span>Bot</span></div>
+    </div>
+    <div class="login-card">
+      <p class="login-subtitle">Le bot AntiRaid Discord le plus avancé.<br>Connectez-vous avec <strong>Discord OAuth2</strong> pour gérer votre serveur.</p>
+      <button class="discord-btn" onclick="startLogin()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.492c-1.53-.69-3.17-1.2-4.885-1.49a.075.075 0 0 0-.079.036c-.21.369-.444.85-.608 1.23a18.566 18.566 0 0 0-5.487 0 12.36 12.36 0 0 0-.617-1.23A.077.077 0 0 0 8.562 3c-1.714.29-3.354.8-4.885 1.491a.07.07 0 0 0-.032.027C.533 9.093-.32 13.555.099 17.961a.08.08 0 0 0 .031.055 20.03 20.03 0 0 0 5.993 2.98.078.078 0 0 0 .084-.026c.462-.62.874-1.275 1.226-1.963.021-.04.001-.088-.041-.104a13.201 13.201 0 0 1-1.872-.878.075.075 0 0 1-.008-.125c.126-.093.252-.19.372-.287a.075.075 0 0 1 .078-.01c3.927 1.764 8.18 1.764 12.061 0a.075.075 0 0 1 .079.009c.12.098.245.195.372.288a.075.075 0 0 1-.006.125c-.598.344-1.22.635-1.873.877a.075.075 0 0 0-.041.105c.36.687.772 1.341 1.225 1.962a.077.077 0 0 0 .084.028 19.963 19.963 0 0 0 6.002-2.981.076.076 0 0 0 .032-.054c.5-5.094-.838-9.52-3.549-13.442a.06.06 0 0 0-.031-.028z"/></svg>
+        Connexion avec Discord
+      </button>
+      <div class="login-divider">Fonctionnalités incluses</div>
+      <div class="login-features">
+        <div class="lf-item"><div class="lf-dot"></div>AntiRaid avancé</div>
+        <div class="lf-item"><div class="lf-dot"></div>Vérification membre</div>
+        <div class="lf-item"><div class="lf-dot"></div>Logs détaillés</div>
+        <div class="lf-item"><div class="lf-dot"></div>AutoMod IA</div>
+        <div class="lf-item"><div class="lf-dot"></div>Rôles automatiques</div>
+        <div class="lf-item"><div class="lf-dot"></div>Whitelist / Blacklist</div>
+      </div>
+    </div>
+    <div class="login-footer">ShieldBot v2.4 &middot; Discord API v10 &middot; <a href="#" style="color:var(--v4)">Politique de confidentialité</a></div>
+  </div>
+</div>
+
+<!-- ========== LOADING PAGE ========== -->
+<div class="page" id="page-loading">
+  <div class="load-spinner"></div>
+  <div class="load-text" id="load-text">Authentification Discord...</div>
+</div>
+
+<!-- ========== APP PAGE ========== -->
+<div class="page" id="page-app">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-header">
+      <div class="sb-logo">
+        <div class="sb-logo-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div class="sb-logo-text">Shield<span>Bot</span></div>
+        <span class="sb-version">v2.4</span>
+      </div>
+    </div>
+
+    <!-- Server selector -->
+    <div class="sb-server-sel" id="server-sel" onclick="toggleServerDD()">
+      <div class="srv-icon" id="srv-icon">T</div>
+      <div class="srv-info">
+        <div class="srv-name" id="srv-name">The Gaming Hub</div>
+        <div class="srv-id" id="srv-id">#1082934710293847</div>
+      </div>
+      <svg class="srv-chev" id="srv-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="srv-dropdown" id="srv-dropdown">
+        <div class="srv-opt active" onclick="selectServer('The Gaming Hub','T','#1082934710293847')">
+          <div class="srv-icon" style="width:28px;height:28px;font-size:11px;border-radius:8px;">T</div>
+          The Gaming Hub
+        </div>
+        <div class="srv-opt" onclick="selectServer('Dev Community','D','#9847362810293847')">
+          <div class="srv-icon" style="width:28px;height:28px;font-size:11px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#2563eb)">D</div>
+          Dev Community
+        </div>
+        <div class="srv-opt" onclick="selectServer('Anime Vault','A','#4729381029384756')">
+          <div class="srv-icon" style="width:28px;height:28px;font-size:11px;border-radius:8px;background:linear-gradient(135deg,#ec4899,#8b5cf6)">A</div>
+          Anime Vault
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-nav">
+      <div class="sb-section">Navigation</div>
+      <div class="sb-item active" id="nav-dashboard" onclick="showView('dashboard')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></span>
+        Dashboard
+      </div>
+      <div class="sb-item" id="nav-antiraid" onclick="showView('antiraid')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        AntiRaid
+        <span class="sb-badge g">ON</span>
+      </div>
+      <div class="sb-item" id="nav-automod" onclick="showView('automod')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg></span>
+        AutoMod
+        <span class="sb-badge v">PRO</span>
+      </div>
+      <div class="sb-item" id="nav-verification" onclick="showView('verification')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></span>
+        Vérification
+      </div>
+      <div class="sb-item" id="nav-logs" onclick="showView('logs')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span>
+        Logs
+        <span class="sb-badge r">14</span>
+      </div>
+      <div class="sb-item" id="nav-whitelist" onclick="showView('whitelist')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        Whitelist
+      </div>
+
+      <div class="sb-section" style="margin-top:8px;">Configuration</div>
+      <div class="sb-item" id="nav-settings" onclick="showView('settings')">
+        <span class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+        Paramètres
+      </div>
+    </div>
+
+    <div class="sb-user">
+      <img class="sb-av" id="user-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="">
+      <div class="sb-uinfo">
+        <div class="sb-uname" id="user-name">CoolUser</div>
+        <div class="sb-utag" id="user-tag">#0001</div>
+      </div>
+      <button class="sb-logout" title="Déconnexion" onclick="doLogout()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrap">
+    <div class="topbar">
+      <div>
+        <div class="tb-title" id="tb-title">Dashboard</div>
+        <div class="tb-breadcrumb">ShieldBot / <span id="tb-sub">Vue d'ensemble</span></div>
+      </div>
+      <div class="tb-right">
+        <div class="tb-chip">
+          <div class="online-dot"></div>
+          Bot en ligne
+        </div>
+        <div class="tb-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Ping 42ms
+        </div>
+        <div class="tb-notif">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-badge">3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-content">
+
+      <!-- ===== DASHBOARD VIEW ===== -->
+      <div class="view active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card purple">
+            <div class="sc-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="sc-val" id="stat-members">2 847</div>
+            <div class="sc-label">Membres totaux</div>
+            <div class="sc-change up">▲ +23 cette semaine</div>
+          </div>
+          <div class="stat-card red">
+            <div class="sc-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+            <div class="sc-val" id="stat-blocked">147</div>
+            <div class="sc-label">Raids bloqués</div>
+            <div class="sc-change up">▲ +8 aujourd'hui</div>
+          </div>
+          <div class="stat-card green">
+            <div class="sc-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="sc-val">99.8%</div>
+            <div class="sc-label">Taux de protection</div>
+            <div class="sc-change up">▲ +0.2% ce mois</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="sc-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+            <div class="sc-val">3</div>
+            <div class="sc-label">Alertes actives</div>
+            <div class="sc-change down">▼ -2 depuis hier</div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="sec-header">
+              <div><div class="sec-title">Activité (7 jours)</div><div class="sec-sub">Tentatives de raid détectées</div></div>
+            </div>
+            <div class="chart-bar-wrap" id="chart-bars">
+              <!-- filled by JS -->
+            </div>
+            <div class="chart-labels" id="chart-labels"></div>
+          </div>
+          <div class="card">
+            <div class="sec-header">
+              <div><div class="sec-title">Dernières alertes</div></div>
+              <button class="btn btn-outline btn-sm" onclick="showView('logs')">Voir tout</button>
+            </div>
+            <div id="recent-alerts">
+              <div class="log-entry">
+                <div class="log-icon ban"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div>
+                <div class="log-body"><div class="log-text">Raid détecté — <strong>42 joins/min</strong> bloqués</div><div class="log-time">Il y a 2 min</div></div>
+              </div>
+              <div class="log-entry">
+                <div class="log-icon shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                <div class="log-body"><div class="log-text">Mode lockdown activé — <strong>durée 5 min</strong></div><div class="log-time">Il y a 15 min</div></div>
+              </div>
+              <div class="log-entry">
+                <div class="log-icon kick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></div>
+                <div class="log-body"><div class="log-text"><strong>SpamBot#0001</strong> expulsé (compte < 24h)</div><div class="log-time">Il y a 1h</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-header">
+            <div><div class="sec-title">Statut des modules</div></div>
+          </div>
+          <div class="grid-3">
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">AntiRaid</div><div style="font-size:11px;color:var(--text2);">Protection en temps réel</div></div>
+              <span class="badge green">Actif</span>
+            </div>
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">AutoMod</div><div style="font-size:11px;color:var(--text2);">Filtrage IA des messages</div></div>
+              <span class="badge green">Actif</span>
+            </div>
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">Vérification</div><div style="font-size:11px;color:var(--text2);">Captcha au join</div></div>
+              <span class="badge amber">Config. req.</span>
+            </div>
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">AntiSpam</div><div style="font-size:11px;color:var(--text2);">Détection messages répétitifs</div></div>
+              <span class="badge green">Actif</span>
+            </div>
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">AntiLink</div><div style="font-size:11px;color:var(--text2);">Blocage liens suspects</div></div>
+              <span class="badge green">Actif</span>
+            </div>
+            <div class="card-sm" style="display:flex;align-items:center;gap:12px;">
+              <div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">Logs</div><div style="font-size:11px;color:var(--text2);">Journalisation complète</div></div>
+              <span class="badge blue">Partiel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ANTIRAID VIEW ===== -->
+      <div class="view" id="view-antiraid">
+        <div class="alert purple">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>Protection AntiRaid activée — Mode <strong>Standard</strong>. Dernière attaque bloquée il y a 2 minutes.</span>
+        </div>
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="sec-title" style="margin-bottom:16px;">Seuils de détection</div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Joins par minute</div><div class="set-desc">Nombre max de jointures avant déclenchement</div></div>
+              <div class="set-ctrl"><input type="number" class="inp" value="10" style="width:80px;text-align:center;"></div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Mentions par message</div><div class="set-desc">Max de @mentions dans un seul message</div></div>
+              <div class="set-ctrl"><input type="number" class="inp" value="5" style="width:80px;text-align:center;"></div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Messages par seconde</div><div class="set-desc">Flood de messages d'un même utilisateur</div></div>
+              <div class="set-ctrl"><input type="number" class="inp" value="3" style="width:80px;text-align:center;"></div>
+            </div>
+            <div class="set-row" style="border-bottom:none;">
+              <div class="set-info"><div class="set-name">Création de salons</div><div class="set-desc">Créations anormales par des bots/comptes</div></div>
+              <div class="set-ctrl"><input type="number" class="inp" value="2" style="width:80px;text-align:center;"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-title" style="margin-bottom:16px;">Action automatique</div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Mode lockdown</div><div class="set-desc">Ferme tous les salons pendant une attaque</div></div>
+              <div class="set-ctrl">
+                <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Ban IP des raiders</div><div class="set-desc">Bannit automatiquement les membres suspects</div></div>
+              <div class="set-ctrl">
+                <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Notification admin</div><div class="set-desc">Envoie une alerte aux administrateurs</div></div>
+              <div class="set-ctrl">
+                <label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="set-row" style="border-bottom:none;">
+              <div class="set-info"><div class="set-name">Canal d'alerte</div><div class="set-desc">Salon où envoyer les alertes</div></div>
+              <div class="set-ctrl">
+                <div class="cdd" id="dd-channel" style="width:160px;">
+                  <button class="cdd-btn" onclick="toggleDD('dd-channel')">#alertes-raid<svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                  <div class="cdd-list">
+                    <div class="cdd-opt selected">#alertes-raid</div>
+                    <div class="cdd-opt">#mod-logs</div>
+                    <div class="cdd-opt">#admin-only</div>
+                    <div class="cdd-opt">#bot-spam</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-header">
+            <div><div class="sec-title">Niveau de protection</div><div class="sec-sub">Choisissez selon la taille de votre serveur</div></div>
+          </div>
+          <div class="grid-3" style="margin-top:6px;">
+            <div id="prot-low" class="card-sm" style="cursor:pointer;border-color:rgba(16,185,129,0.3);background:rgba(16,185,129,0.05);" onclick="selectProtection('low')">
+              <div style="font-size:13px;font-weight:700;color:var(--green2);margin-bottom:4px;">Faible</div>
+              <div style="font-size:12px;color:var(--text2);">Petits serveurs. Seuils élevés, moins de faux positifs.</div>
+            </div>
+            <div id="prot-std" class="card-sm" style="cursor:pointer;border-color:var(--border3);background:rgba(139,92,246,0.08);" onclick="selectProtection('std')">
+              <div style="font-size:13px;font-weight:700;color:var(--v4);margin-bottom:4px;">Standard ✓</div>
+              <div style="font-size:12px;color:var(--text2);">Recommandé. Équilibre sécurité / expérience.</div>
+            </div>
+            <div id="prot-high" class="card-sm" style="cursor:pointer;" onclick="selectProtection('high')">
+              <div style="font-size:13px;font-weight:700;color:var(--red2);margin-bottom:4px;">Maximum</div>
+              <div style="font-size:12px;color:var(--text2);">Grands serveurs. Tolérance zéro, peut bloquer des légitimes.</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
+            <button class="btn btn-outline" onclick="showToast('Paramètres réinitialisés','info')">Réinitialiser</button>
+            <button class="btn btn-v" onclick="showToast('Configuration sauvegardée !','success')">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== AUTOMOD VIEW ===== -->
+      <div class="view" id="view-automod">
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="sec-title" style="margin-bottom:16px;">Filtres de contenu</div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">AntiSpam</div><div class="set-desc">Détecte les messages en rafale</div></div>
+              <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">AntiLink</div><div class="set-desc">Bloque les liens Discord / suspects</div></div>
+              <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Anti-mentions en masse</div><div class="set-desc">Limite les @everyone et @here non autorisés</div></div>
+              <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">Filtre mots bannis</div><div class="set-desc">Supprime les messages avec mots interdits</div></div>
+              <div class="set-ctrl"><label class="toggle"><input type="checkbox"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            </div>
+            <div class="set-row" style="border-bottom:none;">
+              <div class="set-info"><div class="set-name">Anti-emoji spam</div><div class="set-desc">Limite les messages full emojis</div></div>
+              <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="sec-title" style="margin-bottom:16px;">Actions par défaut</div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">1ère infraction</div></div>
+              <div class="set-ctrl">
+                <div class="cdd" id="dd-act1" style="width:140px;">
+                  <button class="cdd-btn" onclick="toggleDD('dd-act1')"><span>Avertir</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                  <div class="cdd-list">
+                    <div class="cdd-opt selected"><div class="cdd-opt-dot" style="background:var(--amber)"></div>Avertir</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--v3)"></div>Timeout 5min</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--red)"></div>Kick</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--red2)"></div>Ban</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="set-row">
+              <div class="set-info"><div class="set-name">2ème infraction</div></div>
+              <div class="set-ctrl">
+                <div class="cdd" id="dd-act2" style="width:140px;">
+                  <button class="cdd-btn" onclick="toggleDD('dd-act2')"><span>Timeout 5min</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                  <div class="cdd-list">
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--amber)"></div>Avertir</div>
+                    <div class="cdd-opt selected"><div class="cdd-opt-dot" style="background:var(--v3)"></div>Timeout 5min</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--red)"></div>Kick</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--red2)"></div>Ban</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="set-row" style="border-bottom:none;">
+              <div class="set-info"><div class="set-name">3ème infraction</div></div>
+              <div class="set-ctrl">
+                <div class="cdd" id="dd-act3" style="width:140px;">
+                  <button class="cdd-btn" onclick="toggleDD('dd-act3')"><span>Ban</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                  <div class="cdd-list">
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--amber)"></div>Avertir</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--v3)"></div>Timeout 5min</div>
+                    <div class="cdd-opt"><div class="cdd-opt-dot" style="background:var(--red)"></div>Kick</div>
+                    <div class="cdd-opt selected"><div class="cdd-opt-dot" style="background:var(--red2)"></div>Ban</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:18px;">
+          <div class="sec-title" style="margin-bottom:12px;">Mots bannis</div>
+          <div class="tag-wrap" id="banned-words-wrap" onclick="document.getElementById('banned-input').focus()">
+            <span class="tag">spam<button class="tag-x" onclick="removeTag(this)">×</button></span>
+            <span class="tag">raid<button class="tag-x" onclick="removeTag(this)">×</button></span>
+            <span class="tag">discord.gg/free<button class="tag-x" onclick="removeTag(this)">×</button></span>
+            <span class="tag">nitro gratuit<button class="tag-x" onclick="removeTag(this)">×</button></span>
+            <input class="tag-input" id="banned-input" placeholder="Ajouter un mot..." onkeydown="addBannedWord(event)">
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:6px;">Appuyez sur Entrée pour ajouter un mot. Supporte les expressions régulières.</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-v" onclick="showToast('AutoMod sauvegardé !','success')">Sauvegarder les règles</button>
+        </div>
+      </div>
+
+      <!-- ===== VERIFICATION VIEW ===== -->
+      <div class="view" id="view-verification">
+        <div class="card" style="margin-bottom:18px;">
+          <div class="sec-title" style="margin-bottom:16px;">Méthode de vérification</div>
+          <div class="grid-3" style="margin-bottom:16px;">
+            <div class="card-sm" style="cursor:pointer;border-color:var(--border3);background:rgba(139,92,246,0.08);" id="vmethod-captcha">
+              <div style="font-size:20px;margin-bottom:6px;">🤖</div>
+              <div style="font-size:13px;font-weight:700;color:var(--v4);">CAPTCHA ✓</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px;">Image ou texte à recopier</div>
+            </div>
+            <div class="card-sm" style="cursor:pointer;" id="vmethod-button">
+              <div style="font-size:20px;margin-bottom:6px;">🔘</div>
+              <div style="font-size:13px;font-weight:700;">Bouton simple</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px;">Clic sur un bouton pour accéder</div>
+            </div>
+            <div class="card-sm" style="cursor:pointer;" id="vmethod-reaction">
+              <div style="font-size:20px;margin-bottom:6px;">✅</div>
+              <div style="font-size:13px;font-weight:700;">Réaction</div>
+              <div style="font-size:11px;color:var(--text2);margin-top:3px;">Réagir à un message avec un emoji</div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-info"><div class="set-name">Rôle après vérification</div><div class="set-desc">Rôle attribué aux membres vérifiés</div></div>
+            <div class="set-ctrl">
+              <div class="cdd" id="dd-vrole" style="width:170px;">
+                <button class="cdd-btn" onclick="toggleDD('dd-vrole')"><span>@Membre vérifié</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                <div class="cdd-list">
+                  <div class="cdd-opt selected">@Membre vérifié</div>
+                  <div class="cdd-opt">@Member</div>
+                  <div class="cdd-opt">@Verified</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-info"><div class="set-name">Canal de vérification</div><div class="set-desc">Où le bot poste le message de vérification</div></div>
+            <div class="set-ctrl">
+              <div class="cdd" id="dd-vchan" style="width:170px;">
+                <button class="cdd-btn" onclick="toggleDD('dd-vchan')"><span>#vérification</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+                <div class="cdd-list">
+                  <div class="cdd-opt selected">#vérification</div>
+                  <div class="cdd-opt">#accueil</div>
+                  <div class="cdd-opt">#règlement</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="set-info"><div class="set-name">Kick si non vérifié après</div><div class="set-desc">Expulse les membres non vérifiés après X minutes</div></div>
+            <div class="set-ctrl" style="gap:8px;display:flex;align-items:center;">
+              <input type="number" class="inp" value="10" style="width:70px;text-align:center;">
+              <span style="font-size:12px;color:var(--text2);">min</span>
+            </div>
+          </div>
+          <div class="set-row" style="border-bottom:none;">
+            <div class="set-info"><div class="set-name">Exiger compte > X jours</div><div class="set-desc">Rejette les comptes récents (anti-bots)</div></div>
+            <div class="set-ctrl" style="gap:8px;display:flex;align-items:center;">
+              <input type="number" class="inp" value="7" style="width:70px;text-align:center;">
+              <span style="font-size:12px;color:var(--text2);">jours</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button class="btn btn-outline" onclick="showToast('Message de vérification envoyé !','info')">Tester le message</button>
+          <button class="btn btn-v" onclick="showToast('Vérification sauvegardée !','success')">Sauvegarder</button>
+        </div>
+      </div>
+
+      <!-- ===== LOGS VIEW ===== -->
+      <div class="view" id="view-logs">
+        <div class="card" style="margin-bottom:14px;">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input class="inp" placeholder="🔍 Rechercher dans les logs..." style="flex:1;min-width:200px;">
+            <div class="cdd" id="dd-logtype" style="width:160px;">
+              <button class="cdd-btn" onclick="toggleDD('dd-logtype')"><span>Tous les types</span><svg class="cdd-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></button>
+              <div class="cdd-list">
+                <div class="cdd-opt selected">Tous les types</div>
+                <div class="cdd-opt">🛡️ AntiRaid</div>
+                <div class="cdd-opt">⛔ Bans</div>
+                <div class="cdd-opt">👟 Kicks</div>
+                <div class="cdd-opt">⚠️ Avertissements</div>
+                <div class="cdd-opt">✅ Joins</div>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exporter CSV
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <table class="tbl">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Utilisateur</th>
+                <th>Action</th>
+                <th>Modérateur</th>
+                <th>Date</th>
+                <th>Sévérité</th>
+              </tr>
+            </thead>
+            <tbody id="logs-table">
+              <tr>
+                <td><span class="badge red">Ban</span></td>
+                <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/1.png" alt="">RaiderBot#0001</td>
+                <td>Raid détecté – compte 2h</td>
+                <td>ShieldBot#8888</td>
+                <td style="color:var(--text2);font-size:12px;">Auj. 14:32</td>
+                <td><div class="severity-sel"><span class="sev-opt high active">HAUTE</span></div></td>
+              </tr>
+              <tr>
+                <td><span class="badge amber">Kick</span></td>
+                <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/2.png" alt="">Spammer#4242</td>
+                <td>Spam de messages (12/s)</td>
+                <td>ShieldBot#8888</td>
+                <td style="color:var(--text2);font-size:12px;">Auj. 13:18</td>
+                <td><div class="severity-sel"><span class="sev-opt med active">MED</span></div></td>
+              </tr>
+              <tr>
+                <td><span class="badge purple">Warn</span></td>
+                <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/3.png" alt="">NoobUser#1337</td>
+                <td>Lien Discord non autorisé</td>
+                <td>Mod#5500</td>
+                <td style="color:var(--text2);font-size:12px;">Auj. 11:05</td>
+                <td><div class="severity-sel"><span class="sev-opt low active">FAIBLE</span></div></td>
+              </tr>
+              <tr>
+                <td><span class="badge red">Ban</span></td>
+                <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/4.png" alt="">BotFarm#9999</td>
+                <td>42 joins/min – Raid</td>
+                <td>ShieldBot#8888</td>
+                <td style="color:var(--text2);font-size:12px;">Hier 22:47</td>
+                <td><div class="severity-sel"><span class="sev-opt high active">HAUTE</span></div></td>
+              </tr>
+              <tr>
+                <td><span class="badge green">Join</span></td>
+                <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/5.png" alt="">NewMember#0042</td>
+                <td>Vérification complétée</td>
+                <td>—</td>
+                <td style="color:var(--text2);font-size:12px;">Hier 21:10</td>
+                <td><div class="severity-sel"><span class="sev-opt low active">FAIBLE</span></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== WHITELIST VIEW ===== -->
+      <div class="view" id="view-whitelist">
+        <div class="grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="sec-header">
+              <div><div class="sec-title">Utilisateurs whitelist</div><div class="sec-sub">Ignorés par toutes les protections</div></div>
+              <button class="btn btn-v btn-sm" onclick="showToast('Utilisateur ajouté !','success')">+ Ajouter</button>
+            </div>
+            <table class="tbl" style="margin-top:8px;">
+              <thead><tr><th>Utilisateur</th><th>ID Discord</th><th>Ajouté par</th><th></th></tr></thead>
+              <tbody>
+                <tr>
+                  <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="">AdminUser#0001</td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text2);">2394823948</td>
+                  <td style="font-size:12px;color:var(--text2);">Vous</td>
+                  <td><button class="btn-icon btn" onclick="showToast('Retiré de la whitelist','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>
+                </tr>
+                <tr>
+                  <td style="display:flex;align-items:center;gap:8px;"><img class="tbl-av" src="https://cdn.discordapp.com/embed/avatars/2.png" alt="">TrustedBot#0042</td>
+                  <td style="font-family:monospace;font-size:11px;color:var(--text2);">1029384756</td>
+                  <td style="font-size:12px;color:var(--text2);">Admin</td>
+                  <td><button class="btn-icon btn" onclick="showToast('Retiré de la whitelist','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="card">
+            <div class="sec-header">
+              <div><div class="sec-title">Rôles whitelistés</div><div class="sec-sub">Ces rôles bypasse les protections</div></div>
+              <button class="btn btn-v btn-sm" onclick="showToast('Rôle ajouté !','success')">+ Ajouter</button>
+            </div>
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+              <div class="card-sm" style="display:flex;align-items:center;gap:10px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0;"></div>
+                <span style="flex:1;font-size:13px;">@Modérateur</span>
+                <button class="btn-icon btn" onclick="showToast('Rôle retiré','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+              </div>
+              <div class="card-sm" style="display:flex;align-items:center;gap:10px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#3b82f6;flex-shrink:0;"></div>
+                <span style="flex:1;font-size:13px;">@Administrateur</span>
+                <button class="btn-icon btn" onclick="showToast('Rôle retiré','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:14px;">IPs / Comptes bannis définitivement</div>
+          <div class="alert red" style="margin-bottom:12px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            <span>Ces utilisateurs ne pourront jamais rejoindre le serveur, même avec un nouveau compte.</span>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <input class="inp" placeholder="ID Discord ou nom d'utilisateur à bannir définitivement" style="flex:1;">
+            <button class="btn btn-danger" onclick="showToast('Ajouté à la blacklist permanente','error')">Ajouter</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SETTINGS VIEW ===== -->
+      <div class="view" id="view-settings">
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <div class="sec-title" style="margin-bottom:16px;">Profil du compte</div>
+              <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);">
+                <img id="settings-av" src="https://cdn.discordapp.com/embed/avatars/0.png" style="width:52px;height:52px;border-radius:50%;border:2px solid var(--border2);">
+                <div>
+                  <div style="font-family:var(--display);font-size:16px;font-weight:700;" id="settings-name">CoolUser</div>
+                  <div style="font-size:12px;color:var(--text2);" id="settings-tag">#0001</div>
+                  <div style="font-size:11px;color:var(--v4);margin-top:3px;">Propriétaire du serveur</div>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <div class="sec-title" style="margin-bottom:16px;">Notifications</div>
+              <div class="set-row">
+                <div class="set-info"><div class="set-name">Alertes raid par DM</div><div class="set-desc">Recevoir les alertes en messages privés</div></div>
+                <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+              </div>
+              <div class="set-row">
+                <div class="set-info"><div class="set-name">Rapport hebdomadaire</div><div class="set-desc">Résumé des activités chaque semaine</div></div>
+                <div class="set-ctrl"><label class="toggle"><input type="checkbox" checked><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+              </div>
+              <div class="set-row" style="border-bottom:none;">
+                <div class="set-info"><div class="set-name">Alertes faux positifs</div><div class="set-desc">Notifier si un légit est bloqué</div></div>
+                <div class="set-ctrl"><label class="toggle"><input type="checkbox"><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px;">
+              <div class="sec-title" style="margin-bottom:16px;">Webhook de logs</div>
+              <label class="inp-label">URL du webhook Discord</label>
+              <input class="inp" type="text" placeholder="https://discord.com/api/webhooks/..." style="margin-bottom:10px;">
+              <div style="display:flex;gap:8px;">
+                <button class="btn btn-outline btn-sm" onclick="showToast('Webhook testé avec succès !','success')">Tester</button>
+                <button class="btn btn-v btn-sm" onclick="showToast('Webhook sauvegardé !','success')">Sauvegarder</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="sec-title" style="margin-bottom:16px;">Danger Zone</div>
+              <div class="alert red" style="margin-bottom:12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <span>Ces actions sont irréversibles.</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <button class="btn btn-danger" style="justify-content:flex-start;" onclick="showToast('Tous les logs supprimés','error')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+                  Effacer tous les logs
+                </button>
+                <button class="btn btn-danger" style="justify-content:flex-start;" onclick="showToast('Configuration réinitialisée','error')">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.75"/></svg>
+                  Reset configuration
+                </button>
+                <button class="btn btn-danger" style="justify-content:flex-start;" onclick="doLogout()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  Déconnecter de Discord
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end view-content -->
+  </div><!-- end main-wrap -->
+</div><!-- end page-app -->
+
+<script>
+// ========== STATE ==========
+var currentUser = null;
+var currentView = 'dashboard';
+var views = ['dashboard','antiraid','automod','verification','logs','whitelist','settings'];
+
+// ========== LOGIN ==========
+function startLogin() {
+  showPage('loading');
+  document.getElementById('load-text').textContent = 'Redirection vers Discord OAuth2...';
+  setTimeout(function() {
+    document.getElementById('load-text').textContent = 'Authentification en cours...';
+    setTimeout(function() {
+      document.getElementById('load-text').textContent = 'Chargement des serveurs...';
+      setTimeout(function() {
+        currentUser = {
+          name: 'GamerPro',
+          tag: '#7842',
+          avatar: 'https://cdn.discordapp.com/embed/avatars/3.png',
+          id: '293847562938475629'
+        };
+        document.getElementById('user-name').textContent = currentUser.name;
+        document.getElementById('user-tag').textContent = currentUser.tag;
+        document.getElementById('user-avatar').src = currentUser.avatar;
+        document.getElementById('settings-name').textContent = currentUser.name;
+        document.getElementById('settings-tag').textContent = currentUser.tag;
+        document.getElementById('settings-av').src = currentUser.avatar;
+        showPage('app');
+        showView('dashboard');
+        initChart();
+        showToast('Connecté en tant que ' + currentUser.name + currentUser.tag, 'success');
+      }, 1000);
+    }, 900);
+  }, 800);
+}
+
+function doLogout() {
+  showPage('login');
+  showToast('Déconnecté de Discord', 'info');
+}
+
+// ========== PAGES ==========
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+  document.getElementById('page-' + name).classList.add('active');
+}
+
+// ========== VIEWS ==========
+function showView(name) {
+  views.forEach(function(v) {
+    var el = document.getElementById('view-' + v);
+    var nav = document.getElementById('nav-' + v);
+    if (el) el.classList.toggle('active', v === name);
+    if (nav) nav.classList.toggle('active', v === name);
+  });
+  var titles = {
+    dashboard: ['Dashboard', 'Vue d\'ensemble'],
+    antiraid: ['AntiRaid', 'Protection contre les raids'],
+    automod: ['AutoMod', 'Modération automatique'],
+    verification: ['Vérification', 'Système de vérification membres'],
+    logs: ['Logs', 'Journal des événements'],
+    whitelist: ['Whitelist', 'Gestion des exceptions'],
+    settings: ['Paramètres', 'Configuration du bot']
+  };
+  if (titles[name]) {
+    document.getElementById('tb-title').textContent = titles[name][0];
+    document.getElementById('tb-sub').textContent = titles[name][1];
+  }
+  currentView = name;
+}
+
+// ========== DROPDOWN (custom) ==========
+function toggleDD(id) {
+  var dd = document.getElementById(id);
+  var isOpen = dd.classList.contains('open');
+  document.querySelectorAll('.cdd.open').forEach(function(d){d.classList.remove('open');});
+  if (!isOpen) dd.classList.add('open');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.cdd')) {
+    document.querySelectorAll('.cdd.open').forEach(function(d){d.classList.remove('open');});
+  }
+  if (!e.target.closest('.sb-server-sel')) {
+    var sd = document.getElementById('srv-dropdown');
+    if (sd) sd.classList.remove('open');
+    var ch = document.getElementById('srv-chev');
+    if (ch) ch.classList.remove('open');
+  }
+});
+
+document.querySelectorAll('.cdd-opt').forEach(function(opt) {
+  opt.addEventListener('click', function() {
+    var dd = opt.closest('.cdd');
+    var btn = dd.querySelector('.cdd-btn span, .cdd-btn');
+    var span = dd.querySelector('.cdd-btn span');
+    if (span) span.textContent = opt.textContent.trim();
+    dd.querySelectorAll('.cdd-opt').forEach(function(o){o.classList.remove('selected');});
+    opt.classList.add('selected');
+    dd.classList.remove('open');
+  });
+});
+
+// ========== SERVER SELECTOR ==========
+function toggleServerDD() {
+  var sd = document.getElementById('srv-dropdown');
+  var ch = document.getElementById('srv-chev');
+  var isOpen = sd.classList.contains('open');
+  sd.classList.toggle('open', !isOpen);
+  ch.classList.toggle('open', !isOpen);
+}
+
+function selectServer(name, letter, id) {
+  document.getElementById('srv-name').textContent = name;
+  document.getElementById('srv-id').textContent = id;
+  document.getElementById('srv-icon').textContent = letter;
+  document.getElementById('srv-dropdown').classList.remove('open');
+  document.getElementById('srv-chev').classList.remove('open');
+  document.querySelectorAll('.srv-opt').forEach(function(o){o.classList.remove('active');});
+  showToast('Serveur : ' + name, 'info');
+}
+
+// ========== PROTECTION LEVEL ==========
+function selectProtection(level) {
+  var cards = {
+    low: document.getElementById('prot-low'),
+    std: document.getElementById('prot-std'),
+    high: document.getElementById('prot-high')
+  };
+  var colors = {low:'rgba(16,185,129,0.3)',std:'var(--border3)',high:'rgba(239,68,68,0.3)'};
+  var bgs = {low:'rgba(16,185,129,0.05)',std:'rgba(139,92,246,0.08)',high:'rgba(239,68,68,0.05)'};
+  Object.keys(cards).forEach(function(k) {
+    cards[k].style.borderColor = k === level ? colors[k] : 'var(--border)';
+    cards[k].style.background = k === level ? bgs[k] : 'var(--bg2)';
+  });
+  var labels = {low:'Faible ✓',std:'Standard ✓',high:'Maximum ✓'};
+  cards[level].querySelector('div').textContent = labels[level];
+}
+
+// ========== TAG WORDS ==========
+function addBannedWord(e) {
+  if (e.key !== 'Enter') return;
+  var inp = document.getElementById('banned-input');
+  var word = inp.value.trim();
+  if (!word) return;
+  var tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.innerHTML = escapeHtml(word) + '<button class="tag-x" onclick="removeTag(this)">×</button>';
+  inp.parentNode.insertBefore(tag, inp);
+  inp.value = '';
+}
+
+function removeTag(btn) {
+  btn.closest('.tag').remove();
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ========== CHART ==========
+function initChart() {
+  var days = ['L','M','M','J','V','S','D'];
+  var vals = [8,3,14,6,21,9,5];
+  var max = Math.max.apply(null, vals);
+  var barsEl = document.getElementById('chart-bars');
+  var labelsEl = document.getElementById('chart-labels');
+  if (!barsEl) return;
+  barsEl.innerHTML = '';
+  labelsEl.innerHTML = '';
+  vals.forEach(function(v, i) {
+    var pct = Math.round((v / max) * 100);
+    var bar = document.createElement('div');
+    bar.className = 'chart-bar ' + (i === 4 ? 'v' : 'b');
+    bar.style.height = '0px';
+    bar.title = v + ' raids – ' + days[i];
+    barsEl.appendChild(bar);
+    var lbl = document.createElement('span');
+    lbl.textContent = days[i];
+    labelsEl.appendChild(lbl);
+    setTimeout(function() {
+      bar.style.height = (pct * 0.8) + 'px';
+    }, i * 80 + 200);
+  });
+}
+
+// ========== TOAST ==========
+function showToast(msg, type) {
+  type = type || 'info';
+  var t = document.createElement('div');
+  t.className = 'toast ' + type;
+  var icons = {
+    success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+    error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>',
+    info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+  };
+  t.innerHTML = '<div class="toast-indicator"></div>' + (icons[type]||'') + '<span>' + escapeHtml(msg) + '</span>';
+  document.body.appendChild(t);
+  setTimeout(function(){t.style.opacity='0';t.style.transform='translateY(10px)';t.style.transition='all 0.3s';setTimeout(function(){t.remove();},300);}, 3000);
+}
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', function() {
+  // toggle thumbs fix
+  document.querySelectorAll('.toggle input').forEach(function(inp) {
+    function update() {
+      var thumb = inp.parentNode.querySelector('.toggle-thumb');
+      var track = inp.parentNode.querySelector('.toggle-track');
+      if (inp.checked) {
+        track.style.background = 'var(--v2)';
+        track.style.borderColor = 'var(--v2)';
+        thumb.style.transform = 'translateX(20px)';
+        thumb.style.background = 'white';
+      } else {
+        track.style.background = '';
+        track.style.borderColor = '';
+        thumb.style.transform = '';
+        thumb.style.background = '';
+      }
+    }
+    update();
+    inp.addEventListener('change', update);
+  });
+});
+</script>
+</body>
+</html>
