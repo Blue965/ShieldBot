@@ -152,7 +152,7 @@ app.post('/api/guild/:id/whitelist', requireAuth, (req,res)=>{
   res.json({success:true});
 });
 
-const HTML = path.join(__dirname,'dashboard.html');
+const HTML = path.join(__dirname,'index.html');
 app.get('/',(req,res)=>res.sendFile(HTML));
 app.get('/dashboard',(req,res)=>{
   if (!req.session.user) return res.redirect('/');
