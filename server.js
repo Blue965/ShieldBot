@@ -11,6 +11,7 @@ const axios   = require('axios');
 const path    = require('path');
 const fs      = require('fs');
 
+const PORT = process.env.PORT || 3000;
 const app = express();
 const PORT          = process.env.PORT          || 3000;
 const CLIENT_ID     = process.env.CLIENT_ID     || 'TON_CLIENT_ID';
@@ -172,4 +173,8 @@ app.get('/dashboard',(req,res)=>{
 app.listen(PORT,()=>{
   console.log(`\n🛡️  ShieldBot Dashboard → http://localhost:${PORT}`);
   console.log(`🔑  Login Discord    → http://localhost:${PORT}/login\n`);
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Serveur sur port ${PORT}`);
 });
